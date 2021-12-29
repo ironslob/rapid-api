@@ -8,6 +8,20 @@ def snake_to_camel_case(string):
 
     return snake[0].lower() + snake[1:]
 
+def python_type_hint(string):
+    types = dict(
+        string = "str",
+        integer = "int",
+        bigint = "int",
+        smallint = "int",
+        datetime = "datetime",
+        date = "date",
+        decimal = "float",
+        numeric = "float",
+    )
+
+    return types[string]
+
 def database_model_name(model):
     return snake_to_title_case(model["table"])
 

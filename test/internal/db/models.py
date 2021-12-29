@@ -12,7 +12,7 @@ from datetime import datetime
 
 
 
-class user(Base):
+class User(Base):
     __tablename__ = "user"
 
     # fields
@@ -96,7 +96,7 @@ class user(Base):
         
     
 
-class restaurant(Base):
+class Restaurant(Base):
     __tablename__ = "restaurant"
 
     # fields
@@ -202,7 +202,7 @@ class restaurant(Base):
         
     
 
-class review(Base):
+class Review(Base):
     __tablename__ = "review"
 
     # fields

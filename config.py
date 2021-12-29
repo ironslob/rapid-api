@@ -2,7 +2,7 @@
 
 from typing import List, Dict, Optional
 from pydantic import BaseModel, Field
-from utils import snake_to_title_case, snake_to_camel_case, database_data_type, graphql_data_type
+from utils import snake_to_title_case, snake_to_camel_case, database_data_type, graphql_data_type, python_type_hint
 
 class DataModelGraphQLRelation(BaseModel):
     relationship: str
@@ -29,6 +29,10 @@ class DataModelField(BaseModel):
     onupdate: Optional[str]
     nullable: bool = Field(False)
     foreign_key: Optional[str]
+
+    @property
+    def python_type_hint(self):
+        return python_type_hint(self.type)
 
     @property
     def database_field_name(self):
@@ -67,7 +71,7 @@ class DataModel(BaseModel):
 
     @property
     def database_model_name(self):
-        return snake_to_camel_case(self.table)
+        return snake_to_title_case(self.table)
 
     @property
     def graphql_identifier(self):

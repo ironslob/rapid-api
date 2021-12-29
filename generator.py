@@ -14,7 +14,8 @@ from config import Config
 @click.option('--config')
 @click.option('--template')
 @click.option('--output')
-def main(config, template, output):
+@click.option('--option', multiple=True)
+def main(config, template, output, option):
     assert config
     assert template
     assert output
@@ -27,6 +28,7 @@ def main(config, template, output):
     config_obj = Config(**data)
     template_data = dict(
         config=config_obj,
+        options=option,
     )
 
     template_paths = [
