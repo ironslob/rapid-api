@@ -1,0 +1,111 @@
+---
+backend:
+  package: internal
+  # TODO remove this, generate it somehow
+  model_imports:
+    - "from datetime import datetime"
+  datamodel:
+    user:
+      table: user
+      primary_key: user_id
+      graphql:
+      #   upsert: true
+      #   create: true
+      #   delete: true
+      #   update: true
+      #   identifier: userId
+        hierarchy:
+          reviews:
+            relationship: reviews
+            # as_list: True
+
+      fields:
+        # - name: name of database field
+        #   type: field type
+        #   nullable: true/false - defaults to false
+        #   foreign_key: datamodel.field_name, e.g. user.user_id
+        - name: user_id
+          type: integer
+        - name: username
+          type: string
+        - name: password
+          type: string
+        - name: created_at
+          type: datetime
+          default: datetime.utcnow
+        - name: updated_at
+          type: datetime
+          default: datetime.utcnow
+          onupdate: datetime.utcnow
+
+      relationships:
+        reviews:
+          foreign_key: review.user_id
+          backref: user
+
+    restaurant:
+      table: restaurant
+      primary_key: restaurant_id
+      fields:
+        - name: restaurant_id
+          type: integer
+        - name: name
+          type: string
+        - name: address
+          type: string
+        - name: cuisine
+          type: string
+        - name: average_rating
+          type: decimal
+        - name: created_at
+          type: datetime
+          default: datetime.utcnow
+        - name: updated_at
+          type: datetime
+          default: datetime.utcnow
+          onupdate: datetime.utcnow
+
+      graphql:
+        hierarchy:
+          reviews:
+            relationship: reviews
+
+      relationships:
+        reviews:
+          foreign_key: review.restaurant_id
+          backref: restaurant
+
+    review:
+      table: review
+      primary_key: review_id
+      fields:
+        - name: review_id
+          type: integer
+        - name: restaurant_id
+          type: integer
+          foreign_key: restaurant.restaurant_id
+        - name: user_id
+          type: integer
+          foreign_key: user.user_id
+        - name: rating
+          type: integer
+        - name: visit_date
+          type: date
+        - name: comment
+          type: integer
+        - name: created_at
+          type: datetime
+          default: datetime.utcnow
+        - name: updated_at
+          type: datetime
+          default: datetime.utcnow
+          onupdate: datetime.utcnow
+
+      indexes:
+        review_restaurant_idx:
+          fields:
+            - restaurant_id
+
+
+  # relationships
+  # graphql fields

@@ -1,0 +1,120 @@
+{
+    "package": "internal",
+    "template": "backend",
+    "model_imports": [
+        "from datetime import datetime"
+    ],
+    "datamodel": {
+        "user": {
+            "table": "user",
+            "primary_key": "user_id",
+            "fields": {
+                "user_id": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "integer",
+                    "default": "datetime.utcnow"
+                },
+                "updated_at": {
+                    "type": "integer",
+                    "default": "datetime.utcnow",
+                    "onupdate": "datetime.utcnow"
+                }
+            },
+            "relationships": {
+                "reviews": {
+                    "relation": "review",
+                    "backref": "user"
+                }
+            },
+            "api_hierarchy": {
+                "reviews": {
+                    "relation": "reviews"
+                }
+            }
+        },
+        "restaurant": {
+            "table": "restaurant",
+            "primary_key": "restaurant_id",
+            "fields": {
+                "restaurant_id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "cuisine": {
+                    "type": "string"
+                },
+                "average_rating": {
+                    "type": "decimal"
+                },
+                "created_at": {
+                    "type": "integer",
+                    "default": "datetime.utcnow"
+                },
+                "updated_at": {
+                    "type": "integer",
+                    "default": "datetime.utcnow",
+                    "onupdate": "datetime.utcnow"
+                }
+            },
+            "relationships": {
+                "reviews": {
+                    "relation": "review",
+                    "backref": "restaurant"
+                }
+            }
+        },
+        "review": {
+            "table": "review",
+            "primary_key": "review_id",
+            "fields": {
+                "review_id": {
+                    "type": "integer"
+                },
+                "restaurant_id": {
+                    "type": "integer",
+                    "foreign_key": "restaurant.restaurant_id"
+                },
+                "user_id": {
+                    "type": "integer",
+                    "foreign_key": "user.user_id"
+                },
+                "rating": {
+                    "type": "integer"
+                },
+                "visit_date": {
+                    "type": "integer"
+                },
+                "comment": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "integer",
+                    "default": "datetime.utcnow"
+                },
+                "updated_at": {
+                    "type": "integer",
+                    "default": "datetime.utcnow",
+                    "onupdate": "datetime.utcnow"
+                }
+            },
+            "indexes": {
+                "review_restaurant_idx": [
+                    "restaurant_id"
+                ]
+            }
+        }
+    }
+}
