@@ -5,15 +5,23 @@ type ParameterError {
   field: String!
   error: String!
 }
-
 {%- for name, model in config.datamodel.items() %}
+
 type {{ model.graphql_type_name }} {
   {%- for field in model.fields %}
+      {%- if field.description %}
+
+  " {{ field.description }} "
+      {%- endif %}
   {{ field.graphql_field_name }}: {{ field.graphql_type_name }}{% if not field.nullable %}!{% endif %}
   {%- endfor %}
   {%- if model.graphql.hierarchy -%}
     {% for name, relation in model.graphql.hierarchy.items() -%}
       {% set foreign_model = config.datamodel[model.relationships[relation.relationship].foreign_model].graphql_type_name %}
+      {%- if relation.description %}
+
+  "{{ relation.description }}"
+      {%- endif %}
   {{ name }}: {% if relation.as_list -%}[{{ foreign_model }}!]!{% else %}{{ foreign_model }}!{% endif -%}
     {%- endfor -%}
   {% endif %}
@@ -26,14 +34,28 @@ type {{ model.graphql_type_name }}ListResponse {
 
   {%- if model.graphql.create %}
 
-type Create{{ model.graphql_type_name }} {
+"""
+Request object to create a {{ model.graphql_type_name }}.
+"""
+input Create{{ model.graphql_type_name }} {
     {%- for field in model.fields %}
       {%- if field.can_create %}
+        {%- if field.description %}
+
+  " {{ field.description }} "
+        {%- endif %}
   {{ field.graphql_field_name }}: {{ field.graphql_type_name }}{% if not field.nullable %}!{% endif %}
       {%- endif %}
     {%- endfor %}
 }
 
+"""
+Response object when creating a {{ model.graphql_type_name }}.
+
+- `success` - whether the object was created
+- `errors` - list of errors (field/error) if problems occurred
+- `data` - the created object, if successful
+"""
 type Create{{ model.graphql_type_name }}Response {
   success: Boolean!
   errors: [ParameterError!]
@@ -43,7 +65,10 @@ type Create{{ model.graphql_type_name }}Response {
 
   {%- if model.graphql.update %}
 
-type Update{{ model.graphql_type_name }} {
+"""
+Request object to create update {{ model.graphql_type_name }}.
+"""
+input Update{{ model.graphql_type_name }} {
     {%- for field in model.fields %}
       {%- if field.can_update %}
   {{ field.graphql_field_name }}: {{ field.graphql_type_name }}{% if not field.nullable %}!{% endif %}
@@ -51,6 +76,13 @@ type Update{{ model.graphql_type_name }} {
     {%- endfor %}
 }
 
+"""
+Response object when updating a {{ model.graphql_type_name }}.
+
+- `success` - whether the object was updated
+- `errors` - list of errors (field/error) if problems occurred
+- `data` - the updated object, if successful
+"""
 type Update{{ model.graphql_type_name }}Response {
   success: Boolean!
   errors: [ParameterError!]
@@ -58,9 +90,12 @@ type Update{{ model.graphql_type_name }}Response {
 }
   {%- endif %}
 
-  {%- if model.graphql.upsert %}
+  {%- if model.graphql.patch %}
 
-type Upsert{{ model.graphql_type_name }} {
+"""
+Request object to create patch {{ model.graphql_type_name }}.
+"""
+input Patch{{ model.graphql_type_name }} {
     {%- for field in model.fields %}
       {%- if field.can_update %}
   {{ field.graphql_field_name }}: {{ field.graphql_type_name }}
@@ -68,21 +103,34 @@ type Upsert{{ model.graphql_type_name }} {
     {%- endfor %}
 }
 
-type Upsert{{ model.graphql_type_name }}Response {
+"""
+Response object when patching a {{ model.graphql_type_name }}.
+
+- `success` - whether the object was patched
+- `errors` - list of errors (field/error) if problems occurred
+- `data` - the updated object, if successful
+"""
+type Patch{{ model.graphql_type_name }}Response {
   success: Boolean!
   errors: [ParameterError!]
   data: {{ model.graphql_type_name }}
 }
   {%- endif %}
 
-  {%- if model.graphql.upsert %}
+  {%- if model.graphql.patch %}
 
+"""
+Response object when deleting a {{ model.graphql_type_name }}.
+
+- `success` - whether the object was deleted
+- `errors` - list of errors (field/error) if problems occurred
+"""
 type Delete{{ model.graphql_type_name }}Response {
   success: Boolean!
   errors: [ParameterError!]
 }
   {%- endif %}
-{% endfor -%}
+{% endfor %}
 
 type Query {
 {%- for name, model in config.datamodel.items() %}
@@ -102,27 +150,39 @@ type Query {
 type Mutation {
 {%- for name, model in config.datamodel.items() %}
   {%- if model.graphql.create %}
-  create{{ model.graphql_type_name }} (
+  """
+  Create a new {{ model.graphql_type_name }}.
+  """
+  {{ model.graphql_create_mutation }} (
     data: Create{{ model.graphql_type_name }}!
   ): Create{{ model.graphql_type_name }}Response!
   {% endif %}
 
   {%- if model.graphql.update %}
-  update{{ model.graphql_type_name }} (
+  """
+  Update an existing {{ model.graphql_type_name }}.
+  """
+  {{ model.graphql_update_mutation }} (
     {{ model.graphql_identifier }}: {{ model.graphql_identifier_type }}!
     data: Update{{ model.graphql_type_name }}!
   ): Update{{ model.graphql_type_name }}Response!
   {% endif %}
 
-  {%- if model.graphql.upsert %}
-  upsert{{ model.graphql_type_name }} (
+  {%- if model.graphql.patch %}
+  """
+  Patch/partially update an existing {{ model.graphql_type_name }}.
+  """
+  {{ model.graphql_patch_mutation }} (
     {{ model.graphql_identifier }}: {{ model.graphql_identifier_type }}!
-    data: Upsert{{ model.graphql_type_name }}!
-  ): Upsert{{ model.graphql_type_name }}Response!
+    data: Patch{{ model.graphql_type_name }}!
+  ): Patch{{ model.graphql_type_name }}Response!
   {% endif %}
 
   {%- if model.graphql.delete %}
-  delete{{ model.graphql_type_name }} (
+  """
+  Delete an existing {{ model.graphql_type_name }}.
+  """
+  {{ model.graphql_delete_mutation }} (
     {{ model.graphql_identifier }}: {{ model.graphql_identifier_type }}!
   ): Delete{{ model.graphql_type_name }}Response!
   {% endif %}

@@ -7,6 +7,7 @@ from utils import snake_to_title_case, snake_to_camel_case, database_data_type, 
 class DataModelGraphQLRelation(BaseModel):
     relationship: str
     as_list: bool = Field(True)
+    description: Optional[str]
 
 class DataModelRelationship(BaseModel):
     # relation: str
@@ -20,7 +21,7 @@ class DataModelRelationship(BaseModel):
 
     @property
     def foreign_database_model_name(self):
-        return snake_to_camel_case(self.foreign_model)
+        return snake_to_title_case(self.foreign_model)
 
 class DataModelField(BaseModel):
     name: str
@@ -31,7 +32,8 @@ class DataModelField(BaseModel):
     foreign_key: Optional[str]
     can_create: bool = Field(True)
     can_update: bool = Field(True)
-    can_upsert: bool = Field(True)
+    can_patch: bool = Field(True)
+    description: Optional[str]
 
     @property
     def python_type_hint(self):
@@ -54,10 +56,14 @@ class DataModelField(BaseModel):
         return graphql_data_type(self.type)
 
 class DataModelGraphQL(BaseModel):
-    upsert: bool = Field(True)
+    patch: bool = Field(True)
     create: bool = Field(True)
     delete: bool = Field(True)
     update: bool = Field(True)
+    patchMutation: Optional[str] = None
+    createMutation: Optional[str] = None
+    deleteMutation: Optional[str] = None
+    updateMutation: Optional[str] = None
     hierarchy: Dict[str, DataModelGraphQLRelation] = Field(None)
     identifier: Optional[str]
 
@@ -71,6 +77,23 @@ class DataModel(BaseModel):
     fields: List[DataModelField]
     relationships: Optional[Dict[str, DataModelRelationship]]
     indexes: Optional[Dict[str, DataModelIndex]]
+    description: Optional[str]
+
+    @property
+    def graphql_patch_mutation(self):
+        return self.graphql.patchMutation or f"patch{self.graphql_type_name}"
+
+    @property
+    def graphql_create_mutation(self):
+        return self.graphql.createMutation or f"create{self.graphql_type_name}"
+
+    @property
+    def graphql_delete_mutation(self):
+        return self.graphql.deleteMutation or f"delete{self.graphql_type_name}"
+
+    @property
+    def graphql_update_mutation(self):
+        return self.graphql.updateMutation or f"update{self.graphql_type_name}"
 
     @property
     def database_model_name(self):
@@ -78,7 +101,7 @@ class DataModel(BaseModel):
 
     @property
     def graphql_identifier_type(self):
-        return "Integer"    # FIXME not necessarily
+        return "Int"    # FIXME not necessarily
 
     @property
     def graphql_identifier(self):

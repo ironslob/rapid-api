@@ -3,19 +3,21 @@ backend:
   package: internal
   # TODO remove this, generate it somehow
   model_imports:
-    - "from datetime import datetime"
+    - "from datetime import datetime, date"
 datamodel:
   user:
     table: user
     primary_key: user_id
+    description: User entity
     graphql:
-    #   upsert: true
+    #   patch: true
     #   create: true
     #   delete: true
     #   update: true
     #   identifier: userId
       hierarchy:
         reviews:
+          description: User's reviews
           relationship: reviews
           # as_list: True
 
@@ -26,10 +28,12 @@ datamodel:
       #   foreign_key: datamodel.field_name, e.g. user.user_id
       - name: user_id
         type: integer
+        description: User primary key
         can_create: false
         can_update: false
       - name: username
         type: string
+        description: Username
       - name: password
         type: string
       - name: created_at

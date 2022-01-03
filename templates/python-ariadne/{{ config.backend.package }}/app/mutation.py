@@ -6,7 +6,7 @@ from typing import List
 from flask import current_app as app
 from urllib import request
 
-from .db import models
+from ..db import models
 from . import schema
 
 import logging
@@ -18,7 +18,7 @@ def mutations():
 
 {% for name, model in config.datamodel.items() %}
     {%- if model.graphql.create %}
-    @mutation.field("create{{ model.graphql_type_name }}")
+    @mutation.field("{{ model.graphql_create_mutation }}")
     def resolve_create{{ model.graphql_type_name }}(
         response,
         info,
@@ -49,7 +49,7 @@ def mutations():
 
     {% endif %}
     {%- if model.graphql.update %}
-    @mutation.field("update{{ model.graphql_type_name }}")
+    @mutation.field("{{ model.graphql_update_mutation }}")
     def resolve_update{{ model.graphql_type_name }}(
         response,
         info,
@@ -86,13 +86,13 @@ def mutations():
         return response.dict()
 
     {% endif %}
-    {%- if model.graphql.upsert %}
-    @mutation.field("upsert{{ model.graphql_type_name }}")
-    def resolve_upsert{{ model.graphql_type_name }}(
+    {%- if model.graphql.patch %}
+    @mutation.field("{{ model.graphql_patch_mutation }}")
+    def resolve_patch{{ model.graphql_type_name }}(
         response,
         info,
         {{ model.graphql_identifier }},
-        data: schema.Upsert{{ model.graphql_type_name }},
+        data: schema.Patch{{ model.graphql_type_name }},
     ):
         errors = []
         success = False
@@ -116,7 +116,7 @@ def mutations():
 
             # TODO handle hierarchy
 
-        response = schema.Upsert{{ model.graphql_type_name }}Response(
+        response = schema.Patch{{ model.graphql_type_name }}Response(
             success=success,
             errors=errors or None,
             data=obj,
@@ -126,7 +126,7 @@ def mutations():
 
     {% endif %}
     {%- if model.graphql.delete %}
-    @mutation.field("delete{{ model.graphql_type_name }}")
+    @mutation.field("{{ model.graphql_delete_mutation }}")
     def resolve_delete{{ model.graphql_type_name }}(
         response,
         info,

@@ -18,10 +18,10 @@ class {{ model.database_model_name }}(Base):
     # fields
     {% for field in model.fields %}
 
-    {{ field.name }} = Column(
+    {{ field.name }} = sqlalchemy.Column(
         {{ field.database_field_type }}
         {% if field.foreign_key %}
-        , ForeignKey("{{ field.foreign_key }}")
+        , sqlalchemy.ForeignKey("{{ field.foreign_key }}")
         {% endif %}
         {% if model.primary_key == field.name %}
         , primary_key=True
@@ -49,7 +49,7 @@ class {{ model.database_model_name }}(Base):
         {% for name, relationship in model.relationships.items() %}
 
     {{ name }} = relationship(
-        {{ relationship.foreign_database_model_name }}
+        "{{ relationship.foreign_database_model_name }}"
         {% if relationship.backref %}
         , backref="{{ relationship.backref }}"
         {% endif %}
