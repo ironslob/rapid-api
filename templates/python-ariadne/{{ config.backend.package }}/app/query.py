@@ -26,12 +26,23 @@ def queries():
         offset = max(0, offset)
 
         # TODO according to https://github.com/mirumee/ariadne/issues/218 we should be able to identify hierarchical fields and joinload them
-        return (
-            db.query(models.{{ model.database_model_name }})
+        query = (
+            app.session.query(models.{{ model.database_model_name }})
                 # .filter(...)
-                .limit(limit)
-                .offset(offset)
-                .all()
+        )
+
+        total = query.count()
+
+        data = (
+            query
+            .limit(limit)
+            .offset(offset)
+            .all()
+        )
+
+        return dict(
+            data=data,
+            total=total,
         )
 {% endfor %}
 

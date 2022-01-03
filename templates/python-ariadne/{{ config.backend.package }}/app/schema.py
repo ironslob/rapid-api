@@ -53,7 +53,7 @@ class Update{{ model.graphql_type_name }}Response(MutationResponse):
 class Patch{{ model.graphql_type_name }}(BaseModel):
         {%- for field in model.fields %}
             {%- if field.can_update %}
-    {{ field.graphql_field_name }}: {% if field.nullable %}Optional[{{ field.python_type_hint }}]{% else %}{{ field.python_type_hint }}{% endif %} = Field(Ellipsis)
+    {{ field.graphql_field_name }}: {{ field.python_type_hint }} = None
             {%- endif %}
         {%- endfor %}
 

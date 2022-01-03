@@ -22,20 +22,27 @@ def mutations():
     def resolve_create{{ model.graphql_type_name }}(
         response,
         info,
-        data: schema.Create{{ model.graphql_type_name }},
+        data: dict,
     ):
-        obj = models.{{ model.database_model_name }}(
-        {%- for field in model.fields %}
-            {%- if field.can_create %}
-            {{ field.database_field_name }}={{ field.graphql_field_name }},
-            {%- endif %}
-        {%- endfor %}
-        )
+        errors = []
+        success = False
 
-        app.session.add(obj)
-        app.session.commit()
+        # TODO fix validation checks
+        data_obj = schema.Create{{ model.graphql_type_name }}(**data)
 
-        success = True
+        if not errors:
+            obj = models.{{ model.database_model_name }}(
+            {%- for field in model.fields %}
+                {%- if field.can_create %}
+                {{ field.database_field_name }}=data_obj.{{ field.graphql_field_name }},
+                {%- endif %}
+            {%- endfor %}
+            )
+
+            app.session.add(obj)
+            app.session.commit()
+
+            success = True
 
         # TODO handle hierarchy
 
@@ -54,10 +61,13 @@ def mutations():
         response,
         info,
         {{ model.graphql_identifier }},
-        data: schema.Update{{ model.graphql_type_name }},
+        data: dict,
     ) -> schema.MutationResponse:
         errors = []
         success = False
+
+        # TODO fix validation checks
+        data_obj = schema.Update{{ model.graphql_type_name }}(**data)
 
         obj = app.session.query(models.{{ model.database_model_name }}).get({{ model.graphql_identifier }})
 
@@ -67,7 +77,7 @@ def mutations():
         if not errors:
         {%- for field in model.fields %}
             {%- if field.can_update %}
-            obj.{{ field.database_field_name }} = {{ field.graphql_field_name }}
+            obj.{{ field.database_field_name }} = data_obj.{{ field.graphql_field_name }}
             {%- endif %}
         {%- endfor %}
 
@@ -92,10 +102,13 @@ def mutations():
         response,
         info,
         {{ model.graphql_identifier }},
-        data: schema.Patch{{ model.graphql_type_name }},
+        data: dict,
     ):
         errors = []
         success = False
+
+        # TODO fix validation checks
+        data_obj = schema.Patch{{ model.graphql_type_name }}(**data)
 
         obj = app.session.query(models.{{ model.database_model_name }}).get({{ model.graphql_identifier }})
 
@@ -105,11 +118,10 @@ def mutations():
         if not errors:
         {%- for field in model.fields %}
             {%- if field.can_update %}
-            if {{ field.graphql_field_name }} is not Ellipsis:
-                obj.{{ field.database_field_name }} = {{ field.graphql_field_name }}
+            if "{{ field.graphql_field_name }}" in data_obj.__fields_set__:
+                obj.{{ field.database_field_name }} = data_obj.{{ field.graphql_field_name }}
             {% endif %}
         {%- endfor %}
-
             app.session.commit()
 
             success = True
