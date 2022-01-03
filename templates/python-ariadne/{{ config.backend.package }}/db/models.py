@@ -11,7 +11,7 @@ from .session import Base
     {% endfor %}
 {% endif %}
 
-{% for name, model in config.backend.datamodel.items() %}
+{% for name, model in config.datamodel.items() %}
 class {{ model.database_model_name }}(Base):
     __tablename__ = "{{ model.table }}"
 

@@ -29,6 +29,9 @@ class DataModelField(BaseModel):
     onupdate: Optional[str]
     nullable: bool = Field(False)
     foreign_key: Optional[str]
+    can_create: bool = Field(True)
+    can_update: bool = Field(True)
+    can_upsert: bool = Field(True)
 
     @property
     def python_type_hint(self):
@@ -74,8 +77,13 @@ class DataModel(BaseModel):
         return snake_to_title_case(self.table)
 
     @property
+    def graphql_identifier_type(self):
+        return "Integer"    # FIXME not necessarily
+
+    @property
     def graphql_identifier(self):
-        return self.graphql.identifier or snake_to_camel_case(self.primary_key)
+        # return self.graphql.identifier or snake_to_camel_case(self.primary_key)
+        return snake_to_camel_case(self.primary_key)
 
     @property
     def graphql_type_name(self):
@@ -84,7 +92,7 @@ class DataModel(BaseModel):
 class Backend(BaseModel):
     package: str = Field("internal")
     model_imports: Optional[List[str]]
-    datamodel: Dict[str, DataModel]
 
 class Config(BaseModel):
     backend: Backend
+    datamodel: Dict[str, DataModel]

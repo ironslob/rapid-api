@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 def queries():
     query = QueryType()
 
-{% for name, model in config.backend.datamodel.items() %}
+{% for name, model in config.datamodel.items() %}
     @query.field("get{{ model.graphql_type_name }}ById")
     def resolve_get{{ model.graphql_type_name }}ById(response, info, {{ model.graphql_identifier }}):
         # TODO according to https://github.com/mirumee/ariadne/issues/218 we should be able to identify hierarchical fields and joinload them

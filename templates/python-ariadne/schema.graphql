@@ -6,35 +6,89 @@ type ParameterError {
   error: String!
 }
 
-type MutationResponse {
-  success: Boolean!
-  errors: [ParameterError!]
-}
-
-{%- for name, model in config.backend.datamodel.items() %}
+{%- for name, model in config.datamodel.items() %}
 type {{ model.graphql_type_name }} {
-    {%- for field in model.fields %}
-    {{ field.graphql_field_name }}: {{ field.graphql_type_name }}{% if not field.nullable %}!{% endif %}
-    {%- endfor %}
-    {%- if model.graphql.hierarchy -%}
-      {% for name, relation in model.graphql.hierarchy.items() -%}
-        {% set foreign_model = config.backend.datamodel[model.relationships[relation.relationship].foreign_model].graphql_type_name %}
-    {{ name }}: {% if relation.as_list -%}[{{ foreign_model }}!]!{% else %}{{ foreign_model }}!{% endif -%}
-      {%- endfor -%}
-    {% endif %}
+  {%- for field in model.fields %}
+  {{ field.graphql_field_name }}: {{ field.graphql_type_name }}{% if not field.nullable %}!{% endif %}
+  {%- endfor %}
+  {%- if model.graphql.hierarchy -%}
+    {% for name, relation in model.graphql.hierarchy.items() -%}
+      {% set foreign_model = config.datamodel[model.relationships[relation.relationship].foreign_model].graphql_type_name %}
+  {{ name }}: {% if relation.as_list -%}[{{ foreign_model }}!]!{% else %}{{ foreign_model }}!{% endif -%}
+    {%- endfor -%}
+  {% endif %}
 }
 
 type {{ model.graphql_type_name }}ListResponse {
   data: [{{ model.graphql_type_name }}!]!
   total: Int!
 }
+
+  {%- if model.graphql.create %}
+
+type Create{{ model.graphql_type_name }} {
+    {%- for field in model.fields %}
+      {%- if field.can_create %}
+  {{ field.graphql_field_name }}: {{ field.graphql_type_name }}{% if not field.nullable %}!{% endif %}
+      {%- endif %}
+    {%- endfor %}
+}
+
+type Create{{ model.graphql_type_name }}Response {
+  success: Boolean!
+  errors: [ParameterError!]
+  data: {{ model.graphql_type_name }}
+}
+  {%- endif %}
+
+  {%- if model.graphql.update %}
+
+type Update{{ model.graphql_type_name }} {
+    {%- for field in model.fields %}
+      {%- if field.can_update %}
+  {{ field.graphql_field_name }}: {{ field.graphql_type_name }}{% if not field.nullable %}!{% endif %}
+      {%- endif %}
+    {%- endfor %}
+}
+
+type Update{{ model.graphql_type_name }}Response {
+  success: Boolean!
+  errors: [ParameterError!]
+  data: {{ model.graphql_type_name }}
+}
+  {%- endif %}
+
+  {%- if model.graphql.upsert %}
+
+type Upsert{{ model.graphql_type_name }} {
+    {%- for field in model.fields %}
+      {%- if field.can_update %}
+  {{ field.graphql_field_name }}: {{ field.graphql_type_name }}
+      {%- endif %}
+    {%- endfor %}
+}
+
+type Upsert{{ model.graphql_type_name }}Response {
+  success: Boolean!
+  errors: [ParameterError!]
+  data: {{ model.graphql_type_name }}
+}
+  {%- endif %}
+
+  {%- if model.graphql.upsert %}
+
+type Delete{{ model.graphql_type_name }}Response {
+  success: Boolean!
+  errors: [ParameterError!]
+}
+  {%- endif %}
 {% endfor -%}
 
 type Query {
-{%- for name, model in config.backend.datamodel.items() %}
+{%- for name, model in config.datamodel.items() %}
   # TODO pull by non-primary key
   get{{ model.graphql_type_name }}ById(
-    {{ model.graphql_identifier }}: ID!
+    {{ model.graphql_identifier }}: {{ model.graphql_identifier_type }}!
   ): {{ model.graphql_type_name }}
 
   # TODO include relations, such as getReviewsByUser
@@ -46,35 +100,31 @@ type Query {
 }
 
 type Mutation {
-{%- for name, model in config.backend.datamodel.items() %}
+{%- for name, model in config.datamodel.items() %}
   {%- if model.graphql.create %}
   create{{ model.graphql_type_name }} (
-    {%- for field in model.fields %}
-    {{ field.graphql_field_name }}: {% if field.name == model.primary_key %}ID!{% else %}{{ field.graphql_type_name }}{% if not field.nullable %}!{% endif %}{% endif %}
-    {%- endfor %}
-  ): MutationResponse
+    data: Create{{ model.graphql_type_name }}!
+  ): Create{{ model.graphql_type_name }}Response!
   {% endif %}
 
   {%- if model.graphql.update %}
   update{{ model.graphql_type_name }} (
-    {%- for field in model.fields %}
-    {{ field.graphql_field_name }}: {% if field.name == model.primary_key %}ID!{% else %}{{ field.graphql_type_name }}{% if not field.nullable %}!{% endif %}{% endif %}
-    {%- endfor %}
-  ): MutationResponse
+    {{ model.graphql_identifier }}: {{ model.graphql_identifier_type }}!
+    data: Update{{ model.graphql_type_name }}!
+  ): Update{{ model.graphql_type_name }}Response!
   {% endif %}
 
   {%- if model.graphql.upsert %}
   upsert{{ model.graphql_type_name }} (
-    {%- for field in model.fields %}
-    {{ field.graphql_field_name }}: {% if field.name == model.primary_key %}ID!{% else %}{{ field.graphql_type_name }}{% endif %}
-    {%- endfor %}
-  ): MutationResponse
+    {{ model.graphql_identifier }}: {{ model.graphql_identifier_type }}!
+    data: Upsert{{ model.graphql_type_name }}!
+  ): Upsert{{ model.graphql_type_name }}Response!
   {% endif %}
 
   {%- if model.graphql.delete %}
   delete{{ model.graphql_type_name }} (
-    {{ model.graphql_identifier }}: ID!
-  ): MutationResponse
+    {{ model.graphql_identifier }}: {{ model.graphql_identifier_type }}!
+  ): Delete{{ model.graphql_type_name }}Response!
   {% endif %}
 {% endfor -%}
 }
