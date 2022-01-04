@@ -28,6 +28,7 @@ def mutations():
         errors = []
         success = False
         data_obj = None
+        obj = None
 
         try:
             data_obj = schema.Create{{ model.graphql_type_name }}(**data)
@@ -77,6 +78,7 @@ def mutations():
         errors = []
         success = False
         data_obj = None
+        obj = None
 
         try:
             data_obj = schema.Update{{ model.graphql_type_name }}(**data)
@@ -94,20 +96,23 @@ def mutations():
             obj = app.session.query(models.{{ model.database_model_name }}).get({{ model.graphql_identifier }})
 
             if not obj:
-                errors.append('{{ model.graphql_type_name }} not found')
+                errors.append(dict(
+                    field="{{ model.graphql_identifier }}",
+                    error='{{ model.graphql_type_name }} not found',
+                ))
 
-        if not errors:
-        {%- for field in model.fields %}
-            {%- if field.can_update %}
-            obj.{{ field.database_field_name }} = data_obj.{{ field.graphql_field_name }}
-            {%- endif %}
-        {%- endfor %}
+            else:
+            {%- for field in model.fields %}
+                {%- if field.can_update %}
+                obj.{{ field.database_field_name }} = data_obj.{{ field.graphql_field_name }}
+                {%- endif %}
+            {%- endfor %}
 
-            app.session.commit()
+                app.session.commit()
 
-            success = True
+                success = True
 
-            # TODO handle hierarchy
+                # TODO handle hierarchy
 
         response = schema.Update{{ model.graphql_type_name }}Response(
             success=success,
@@ -129,6 +134,7 @@ def mutations():
         errors = []
         success = False
         data_obj = None
+        obj = None
 
         try:
             data_obj = schema.Patch{{ model.graphql_type_name }}(**data)
@@ -151,18 +157,18 @@ def mutations():
                     error='{{ model.graphql_type_name }} not found',
                 ))
 
-        if not errors:
-        {%- for field in model.fields %}
-            {%- if field.can_update %}
-            if "{{ field.graphql_field_name }}" in data_obj.__fields_set__:
-                obj.{{ field.database_field_name }} = data_obj.{{ field.graphql_field_name }}
-            {% endif %}
-        {%- endfor %}
-            app.session.commit()
+            else:
+            {%- for field in model.fields %}
+                {%- if field.can_update %}
+                if "{{ field.graphql_field_name }}" in data_obj.__fields_set__:
+                    obj.{{ field.database_field_name }} = data_obj.{{ field.graphql_field_name }}
+                {% endif %}
+            {%- endfor %}
+                app.session.commit()
 
-            success = True
+                success = True
 
-            # TODO handle hierarchy
+                # TODO handle hierarchy
 
         response = schema.Patch{{ model.graphql_type_name }}Response(
             success=success,
@@ -192,7 +198,7 @@ def mutations():
         if not obj:
             errors.append('{{ model.graphql_type_name }} not found')
 
-        if not errors:
+        else:
             app.session.delete(obj)
             app.session.commit()
 
