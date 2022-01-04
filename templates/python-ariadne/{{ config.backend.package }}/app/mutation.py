@@ -5,6 +5,7 @@ from ariadne import MutationType, convert_kwargs_to_snake_case
 from typing import List
 from flask import current_app as app
 from urllib import request
+from pydantic import ValidationError
 
 from ..db import models
 from . import schema
@@ -26,9 +27,19 @@ def mutations():
     ):
         errors = []
         success = False
+        data_obj = None
 
-        # TODO fix validation checks
-        data_obj = schema.Create{{ model.graphql_type_name }}(**data)
+        try:
+            data_obj = schema.Create{{ model.graphql_type_name }}(**data)
+
+        except ValidationError as e:
+            errors = [
+                dict(
+                    field=error['loc'][0],
+                    error=error['msg'],
+                )
+                for error in e.errors()
+            ]
 
         if not errors:
             obj = models.{{ model.database_model_name }}(
@@ -65,14 +76,25 @@ def mutations():
     ) -> schema.MutationResponse:
         errors = []
         success = False
+        data_obj = None
 
-        # TODO fix validation checks
-        data_obj = schema.Update{{ model.graphql_type_name }}(**data)
+        try:
+            data_obj = schema.Update{{ model.graphql_type_name }}(**data)
 
-        obj = app.session.query(models.{{ model.database_model_name }}).get({{ model.graphql_identifier }})
+        except ValidationError as e:
+            errors = [
+                dict(
+                    field=error['loc'][0],
+                    error=error['msg'],
+                )
+                for error in e.errors()
+            ]
 
-        if not obj:
-            errors.append('{{ model.graphql_type_name }} not found')
+        if not errors:
+            obj = app.session.query(models.{{ model.database_model_name }}).get({{ model.graphql_identifier }})
+
+            if not obj:
+                errors.append('{{ model.graphql_type_name }} not found')
 
         if not errors:
         {%- for field in model.fields %}
@@ -106,14 +128,28 @@ def mutations():
     ):
         errors = []
         success = False
+        data_obj = None
 
-        # TODO fix validation checks
-        data_obj = schema.Patch{{ model.graphql_type_name }}(**data)
+        try:
+            data_obj = schema.Patch{{ model.graphql_type_name }}(**data)
 
-        obj = app.session.query(models.{{ model.database_model_name }}).get({{ model.graphql_identifier }})
+        except ValidationError as e:
+            errors = [
+                dict(
+                    field=error['loc'][0],
+                    error=error['msg'],
+                )
+                for error in e.errors()
+            ]
 
-        if not obj:
-            errors.append('{{ model.graphql_type_name }} not found')
+        if not errors:
+            obj = app.session.query(models.{{ model.database_model_name }}).get({{ model.graphql_identifier }})
+
+            if not obj:
+                errors.append(dict(
+                    field="{{ model.graphql_identifier }}",
+                    error='{{ model.graphql_type_name }} not found',
+                ))
 
         if not errors:
         {%- for field in model.fields %}
