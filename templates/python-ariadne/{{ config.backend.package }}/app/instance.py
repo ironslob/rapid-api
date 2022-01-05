@@ -14,6 +14,7 @@ from flask import (
 from sqlalchemy.orm import scoped_session
 
 {%- if 'rollbar' in options %}
+import os
 import rollbar.contrib.flask
 from flask import got_request_exception
 {%- endif %}
@@ -48,6 +49,24 @@ app.session = scoped_session(SessionLocal, scopefunc=_app_ctx_stack.__ident_func
 nocache.init(app)
 
 {%- if 'rollbar' in options %}
+rollbar_token = os.environ.get("ROLLBAR_TOKEN")
+
+if rollbar_token:
+    rollbar.init(
+        # access token
+        rollbar_token,
+        # environment name
+        os.environ.get("ROLLBAR_ENV"),
+        # server root directory, makes tracebacks prettier
+        root=instance_path,
+        # flask already sets up logging
+        allow_logging_basic_config=False,
+        handler="blocking",  # needed for AWS Lambda
+    )
+
+else:
+    logger.warning("not initialising rollbar")
+
 # send exceptions from `app` to rollbar, using flask's signal system.
 got_request_exception.connect(rollbar.contrib.flask.report_exception, app)
 {%- endif %}
