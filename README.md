@@ -15,15 +15,41 @@ specified.
 
 See example.yaml.
 
-## Does it work?
+## How do templates work?
 
-It should!
+Templates are directory structures within `templates/$name` whereby every
+directory path, and every file, will be run through the Python Jinja2
+templating framework. That means you can include templating variables (or
+conditionals) in file or directory names, as well as the files themselves.
+
+Variables that are defined as of 5th Jan 2022:
+
+- config - this is an instance of Config from the config.py file, containing the config information defined at runtime
+- options - a list of options specified on the command line via `--option`
 
 ## What templates are available?
 
 At the time of writing (5th Jan 2022) there is a single template available -
 python-ariadne - which will take your datamodel and spit out a Flask/Ariadne
 backed Python application to provide a GraphQL implementation.
+
+### Template specific options
+
+Each template can offer a list of different `--option` flags which can be turned off or on and then acted on accordingly. For example, the backend might want to offer built-in support for exception handling via rollbar, and include code like below:
+
+```
+{%- if 'rollbar' in options %}
+import rollbar.contrib.flask
+from flask import got_request_exception
+{%- endif %}
+
+# ...
+
+{%- if 'rollbar' in options %}
+# send exceptions from `app` to rollbar, using flask's signal system.
+got_request_exception.connect(rollbar.contrib.flask.report_exception, app)
+{%- endif %}
+```
 
 ## How do I try it out?
 
