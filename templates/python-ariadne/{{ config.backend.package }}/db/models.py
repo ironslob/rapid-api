@@ -20,8 +20,8 @@ class {{ model.database_model_name }}(Base):
 
     {{ field.name }} = sqlalchemy.Column(
         {{ field.database_field_type }}
-        {% if field.foreign_key %}
-        , sqlalchemy.ForeignKey("{{ field.foreign_key }}")
+        {% if field.foreign_key(config) %}
+        , sqlalchemy.ForeignKey("{{ field.foreign_key(config) }}")
         {% endif %}
         {% if model.primary_key == field.name %}
         , primary_key=True

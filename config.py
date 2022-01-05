@@ -6,22 +6,25 @@ from utils import snake_to_title_case, snake_to_camel_case, database_data_type, 
 
 class DataModelGraphQLRelation(BaseModel):
     relationship: str
-    as_list: bool = Field(True)
+    as_list: bool = True
     description: Optional[str]
+    eager_load: bool = False
 
 class DataModelRelationship(BaseModel):
     # relation: str
     backref: str
-    foreign_key: str
+    foreign_model: Optional[str]
+    foreign_model_field: Optional[str]
 
-    @property
-    def foreign_model(self):
-        datamodel, _ = self.foreign_key.split('.', 1)
-        return datamodel
+    def foreign_model(self, config):
+        return config.datamodel[self.foreign_model]
 
     @property
     def foreign_database_model_name(self):
         return snake_to_title_case(self.foreign_model)
+
+class DataModelFieldFilter(BaseModel):
+    equal: bool = False
 
 class DataModelField(BaseModel):
     name: str
@@ -29,11 +32,21 @@ class DataModelField(BaseModel):
     default: Optional[str]
     onupdate: Optional[str]
     nullable: bool = Field(False)
-    foreign_key: Optional[str]
+    foreign_model: Optional[str]
+    foreign_model_field: Optional[str]
     can_create: bool = Field(True)
     can_update: bool = Field(True)
     can_patch: bool = Field(True)
     description: Optional[str]
+    filters: Optional[DataModelFieldFilter] = DataModelFieldFilter()
+
+    def foreign_key(self, config):
+        key = None
+
+        if self.foreign_model and self.foreign_model_field:
+            key = f"{config.datamodel[self.foreign_model].table}.{self.foreign_model_field}"
+
+        return key
 
     @property
     def python_type_hint(self):

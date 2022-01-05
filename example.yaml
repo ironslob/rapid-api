@@ -19,13 +19,15 @@ datamodel:
         reviews:
           description: User's reviews
           relationship: reviews
+          eager_load: true
           # as_list: True
 
     fields:
       # - name: name of database field
       #   type: field type
       #   nullable: true/false - defaults to false
-      #   foreign_key: datamodel.field_name, e.g. user.user_id
+      #   foreign_model: datamodel name e.g. user
+      #   foreign_model_field: field name e.g. user_id
       - name: user_id
         type: integer
         description: User primary key
@@ -34,6 +36,8 @@ datamodel:
       - name: username
         type: string
         description: Username
+        filters:
+          equal: true
       - name: password
         type: string
       - name: created_at
@@ -50,7 +54,8 @@ datamodel:
 
     relationships:
       reviews:
-        foreign_key: review.user_id
+        foreign_model: review
+        foreign_model_field: user_id
         backref: user
 
   restaurant:
@@ -88,7 +93,8 @@ datamodel:
 
     relationships:
       reviews:
-        foreign_key: review.restaurant_id
+        foreign_model: review
+        foreign_model_field: restaurant_id
         backref: restaurant
 
   review:
@@ -101,10 +107,12 @@ datamodel:
         can_update: false
       - name: restaurant_id
         type: integer
-        foreign_key: restaurant.restaurant_id
+        foreign_model: restaurant
+        foreign_model_field: restaurant_id
       - name: user_id
         type: integer
-        foreign_key: user.user_id
+        foreign_model: user
+        foreign_model_field: user_id
       - name: rating
         type: integer
       - name: visit_date
@@ -122,6 +130,21 @@ datamodel:
         onupdate: datetime.utcnow
         can_create: false
         can_update: false
+
+    # graphql:
+    #   hierarchy:
+    #     # these are via backref
+    #     user:
+    #       description: User for review
+    #       relationship: user
+    #       eager_load: true
+    #       as_list: false
+
+    #     restaurant:
+    #       description: Restaurant for review
+    #       relationship: restaurant
+    #       eager_load: true
+    #       as_list: false
 
     indexes:
       review_restaurant_idx:

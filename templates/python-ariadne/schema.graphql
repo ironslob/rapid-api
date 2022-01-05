@@ -141,6 +141,11 @@ type Query {
 
   # TODO include relations, such as getReviewsByUser
   get{{ model.graphql_type_name }}(
+  {%- for field in model.fields %}
+      {%- if field.filters.equal %}
+    {{ field.graphql_field_name }}: {{ field.graphql_type_name }},
+      {%- endif %}
+  {%- endfor %}
     offset: Int = 0,
     limit: Int = 10,
   ): {{ model.graphql_type_name }}ListResponse!
