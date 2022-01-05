@@ -4,7 +4,7 @@
 [ ] document generator.py
 [ ] document config
 [ ] many-to-many relationships
-[ ] populate backref relationships for loading (with as_list appropriate)
+[x] populate backref relationships for loading (with as_list appropriate)
 [ ] add reactjs frontend for crud admin work
 [ ] concept of authentication and authorisation
 [ ] per-template post-commands
@@ -19,4 +19,4 @@
 
 [x] joinedload graphql child dependencies
 [ ] joinedload graphql child dependencies on-demand based on what's being requested
-[ ] add backref relationships to graphql schema where appropriate
+[x] add backref relationships to graphql schema where appropriate
