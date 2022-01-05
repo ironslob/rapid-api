@@ -1,0 +1,8 @@
+ariadne==0.14.0
+click==8.0.3
+Flask==2.0.2
+Jinja2==3.0.3
+psycopg2-binary==2.9.3
+pydantic==1.9.0
+SQLAlchemy==1.4.29
+Flask-Cors==3.0.10
