@@ -131,20 +131,20 @@ datamodel:
         can_create: false
         can_update: false
 
-    # graphql:
-    #   hierarchy:
-    #     # these are via backref
-    #     user:
-    #       description: User for review
-    #       relationship: user
-    #       eager_load: true
-    #       as_list: false
+    graphql:
+      hierarchy:
+        # these are via backref
+        user:
+          description: User for review
+          relationship: user
+          eager_load: true
+          as_list: false
 
-    #     restaurant:
-    #       description: Restaurant for review
-    #       relationship: restaurant
-    #       eager_load: true
-    #       as_list: false
+        restaurant:
+          description: Restaurant for review
+          relationship: restaurant
+          eager_load: true
+          as_list: false
 
     indexes:
       review_restaurant_idx:

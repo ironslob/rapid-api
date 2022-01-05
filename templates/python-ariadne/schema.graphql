@@ -17,7 +17,7 @@ type {{ model.graphql_type_name }} {
   {%- endfor %}
   {%- if model.graphql.hierarchy -%}
     {% for name, relation in model.graphql.hierarchy.items() -%}
-      {% set foreign_model = config.datamodel[model.relationships[relation.relationship].foreign_model].graphql_type_name %}
+      {% set foreign_model = config.graphql_relation_foreign_model(model, relation).graphql_type_name %}
       {%- if relation.description %}
 
   "{{ relation.description }}"

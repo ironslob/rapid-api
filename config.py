@@ -11,13 +11,9 @@ class DataModelGraphQLRelation(BaseModel):
     eager_load: bool = False
 
 class DataModelRelationship(BaseModel):
-    # relation: str
     backref: str
-    foreign_model: Optional[str]
-    foreign_model_field: Optional[str]
-
-    def foreign_model(self, config):
-        return config.datamodel[self.foreign_model]
+    foreign_model: str
+    foreign_model_field: str
 
     @property
     def foreign_database_model_name(self):
@@ -92,6 +88,8 @@ class DataModel(BaseModel):
     indexes: Optional[Dict[str, DataModelIndex]]
     description: Optional[str]
 
+    backrefs: Dict[str, DataModelRelationship] = None
+
     @property
     def graphql_patch_mutation(self):
         return self.graphql.patchMutation or f"patch{self.graphql_type_name}"
@@ -132,3 +130,41 @@ class Backend(BaseModel):
 class Config(BaseModel):
     backend: Backend
     datamodel: Dict[str, DataModel]
+
+    backrefs_populated: bool = False
+
+    def _populate_datamodelbackrefs(self):
+        if not self.backrefs_populated:
+            self.backrefs_populated = True
+
+            for datamodel_name, datamodel in self.datamodel.items():
+                if datamodel.relationships:
+                    for rel_name, relationship in datamodel.relationships.items():
+                        if relationship.backref:
+                            foreign_model = self.datamodel[relationship.foreign_model]
+                            if foreign_model.backrefs is None:
+                                foreign_model.backrefs = {}
+
+                            foreign_model.backrefs[relationship.backref] = DataModelRelationship(
+                                backref=rel_name,
+                                foreign_model=datamodel_name,
+                                foreign_model_field=relationship.foreign_model_field,
+                            )
+
+    def graphql_relation_foreign_model(
+        self,
+        datamodel: DataModel,
+        relation: DataModelGraphQLRelation,
+    ) -> DataModel:
+
+        self._populate_datamodelbackrefs()
+
+        if datamodel.relationships and relation.relationship in datamodel.relationships:
+            relationship = datamodel.relationships[relation.relationship]
+
+        elif datamodel.backrefs and relation.relationship in datamodel.backrefs:
+            relationship = datamodel.backrefs[relation.relationship]
+
+        foreign_model = self.datamodel[relationship.foreign_model]
+
+        return foreign_model
