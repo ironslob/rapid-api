@@ -27,6 +27,37 @@ backed Python application to provide a GraphQL implementation.
 
 ## How do I try it out?
 
+### Setup
+
+```
+ ➜  ~ git clone git@github.com:ironslob/rapid-api.git
+Cloning into 'rapid-api'...
+remote: Enumerating objects: 143, done.
+remote: Counting objects: 100% (143/143), done.
+remote: Compressing objects: 100% (82/82), done.
+remote: Total 143 (delta 58), reused 129 (delta 44), pack-reused 0
+Receiving objects: 100% (143/143), 26.92 KiB | 362.00 KiB/s, done.
+Resolving deltas: 100% (58/58), done.
+ ➜  ~ cd rapid-api
+ ➜  rapid-api git:(main) python3 -m venv venv
+ ➜  rapid-api git:(main) ✗ source venv/bin/activate
+(venv)  ➜  rapid-api git:(main) ✗ pip install -r requirements.txt
+Collecting click==8.0.3
+  Using cached click-8.0.3-py3-none-any.whl (97 kB)
+Collecting Jinja2==3.0.3
+  Using cached Jinja2-3.0.3-py3-none-any.whl (133 kB)
+Collecting MarkupSafe==2.0.1
+  Using cached MarkupSafe-2.0.1-cp38-cp38-manylinux2010_x86_64.whl (30 kB)
+Collecting pydantic==1.8.2
+  Using cached pydantic-1.8.2-cp38-cp38-manylinux2014_x86_64.whl (13.7 MB)
+Collecting PyYAML==6.0
+  Using cached PyYAML-6.0-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl (701 kB)
+Collecting typing-extensions==4.0.1
+  Using cached typing_extensions-4.0.1-py3-none-any.whl (22 kB)
+Installing collected packages: click, MarkupSafe, Jinja2, typing-extensions, pydantic, PyYAML
+Successfully installed Jinja2-3.0.3 MarkupSafe-2.0.1 PyYAML-6.0 click-8.0.3 pydantic-1.8.2 typing-extensions-4.0.1
+```
+
 ### Generate code
 
 There's an example.yaml file provided which will create a datamodel for a simple restaurant review system. There is no authentication or authorisation, just the CRUD work. Run it like so:
