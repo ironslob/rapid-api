@@ -7,6 +7,13 @@ I thought I'd spend some time making it trivial to generate them from a
 datamodel, and then I can spend my time working on the more challenging parts
 of a product.
 
+## Why?
+
+I'm a big believer that your database model should be entirely independent from
+your API model. If they're interconnected then you will have a difficult time
+making changes to either without upsetting your API consumers. Having a layer
+between the two gives you more control over making changes as you need to.
+
 ## How does it work?
 
 Define a datamodel, then the generator will run your chosen template with the
