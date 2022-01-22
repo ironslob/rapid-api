@@ -37,7 +37,10 @@ datamodel:
         type: string
         description: Username
         filters:
-          equal: true
+          eq: true
+          ne: true
+          like: true
+          re: true
       - name: password
         type: string
       - name: created_at
@@ -66,6 +69,11 @@ datamodel:
         type: integer
         can_create: false
         can_update: false
+        filters:
+          lt: true
+          gt: true
+          lte: true
+          gte: true
       - name: name
         type: string
       - name: address

@@ -31,9 +31,11 @@ def queries():
         offset: int,
         limit: int,
   {%- for field in model.fields %}
-      {%- if field.filters.equal %}
-        {{ field.graphql_field_name }}: {{ field.python_type_hint }} = ...,
+    {%- for filter in field.filters._known_filters %}
+      {%- if field.filters | attr(filter) %}
+        {{ field.graphql_field_name }}__{{ filter }}: {{ field.python_type_hint }} = ...,
       {%- endif %}
+    {%- endfor %}
   {%- endfor %}
     ):
         limit = max(0, min(limit, 25))
@@ -55,10 +57,45 @@ def queries():
         )
 
   {%- for field in model.fields %}
-      {%- if field.filters.equal %}
+      {%- if field.filters.eq %}
 
-        if {{ field.graphql_field_name }} is not Ellipsis:
-            query = query.filter(models.{{ model.database_model_name }}.{{ field.name }} == {{ field.graphql_field_name }})
+        if {{ field.graphql_field_name }}__eq is not Ellipsis:
+          query = query.filter(models.{{ model.database_model_name }}.{{ field.name }} == {{ field.graphql_field_name }}__eq)
+      {%- endif %}
+      {%- if field.filters.ne %}
+
+        if {{ field.graphql_field_name }}__ne is not Ellipsis:
+          query = query.filter(models.{{ model.database_model_name }}.{{ field.name }} != {{ field.graphql_field_name }}__ne)
+      {%- endif %}
+      {%- if field.filters.like %}
+
+        if {{ field.graphql_field_name }}__like is not Ellipsis:
+          query = query.filter(models.{{ model.database_model_name }}.{{ field.name }}.like({{ field.graphql_field_name }}__like))
+      {%- endif %}
+      {%- if field.filters.re %}
+
+        if {{ field.graphql_field_name }}__re is not Ellipsis:
+          query = query.filter(models.{{ model.database_model_name }}.{{ field.name }}.op('regexp')({{ field.graphql_field_name }}__re))
+      {%- endif %}
+      {%- if field.filters.lt %}
+
+        if {{ field.graphql_field_name }}__lt is not Ellipsis:
+          query = query.filter(models.{{ model.database_model_name }}.{{ field.name }} < {{ field.graphql_field_name }}__lt)
+      {%- endif %}
+      {%- if field.filters.gt %}
+
+        if {{ field.graphql_field_name }}__gt is not Ellipsis:
+          query = query.filter(models.{{ model.database_model_name }}.{{ field.name }} > {{ field.graphql_field_name }}__gt)
+      {%- endif %}
+      {%- if field.filters.lte %}
+
+        if {{ field.graphql_field_name }}__lte is not Ellipsis:
+          query = query.filter(models.{{ model.database_model_name }}.{{ field.name }} <= {{ field.graphql_field_name }}__lte)
+      {%- endif %}
+      {%- if field.filters.gte %}
+
+        if {{ field.graphql_field_name }}__gte is not Ellipsis:
+          query = query.filter(models.{{ model.database_model_name }}.{{ field.name }} >= {{ field.graphql_field_name }}__gte)
       {%- endif %}
   {%- endfor %}
 

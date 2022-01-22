@@ -21,3 +21,5 @@
 [ ] joinedload graphql child dependencies on-demand based on what's being requested
 [x] add backref relationships to graphql schema where appropriate
 [ ] generate automated tests for generated api
+[x] differents filters
+[ ] all* entities

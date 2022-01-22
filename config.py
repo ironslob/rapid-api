@@ -33,7 +33,16 @@ class DataModelRelationship(BaseModel):
 
 class DataModelFieldFilter(BaseModel):
     # whether this field can be specified and used as "equals"
-    equal: bool = False
+    eq: bool = False
+    ne: bool = False
+    like: bool = False
+    re: bool = False
+    lt: bool = False
+    gt: bool = False
+    lte: bool = False
+    gte: bool = False
+
+    _known_filters = [ 'eq', 'ne', 'like', 're', 'lt', 'gt', 'lte', 'gte' ]
 
 class DataModelField(BaseModel):
     # field name in the model, e.g. username
